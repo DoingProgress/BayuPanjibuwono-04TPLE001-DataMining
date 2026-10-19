@@ -61,7 +61,7 @@ bash
 git clone https://github.com/DoingProgress/BayuPanjibuwono-04TPLE001-DataMining.git
 cd BayuPanjibuwono-04TPLE001-DataMining
 
-# 2. Buat venv (supaya interpreter anda bener)
+# 2. Buat venv
 python -m venv .venv
 .venv\Scripts\activate  # Windows
 # source .venv/bin/activate # Mac/Linux
