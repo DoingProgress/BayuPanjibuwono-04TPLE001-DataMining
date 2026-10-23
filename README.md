@@ -4,9 +4,9 @@ Data Mining - Analisis Pelayanan Pasien & Klasifikasi Iris
 Repository ini berisi 3 proyek Data Mining untuk Tugas 04TPLE001, mulai dari cleaning data klinik, klasifikasi spesies bunga Iris, sampai exploratory data analysis (EDA).
 
 Daftar Isi
-1. http://klinik.py - Analisis Pelayanan Pasien
-2. http://iris.py - Klasifikasi Bunga Iris
-3. http://DatMinPt6.py - EDA & Data Quality Check
+1. klinik.py - Analisis Pelayanan Pasien
+2. iris.py - Klasifikasi Bunga Iris
+3. DatMinPt6.py - EDA & Data Quality Check
 4. Cara Menjalankan
 
 Struktur File
@@ -28,7 +28,7 @@ Struktur File
 ├── README.md
 └── requirements.txt
 
-1. http://klinik.py - Analisis Pelayanan Pasien
+1. klinik.py - Analisis Pelayanan Pasien
 File untuk `Dataset_Pelayanan_Pasien.csv`.
 
 *Tujuan:* Evaluasi retrospektif pelayanan pasien klinik untuk distribusi umur, 10 diagnosa terbanyak, pasien lama vs baru, dan beban per dokter.
@@ -39,7 +39,7 @@ File untuk `Dataset_Pelayanan_Pasien.csv`.
 - Rekap: Kategori Umur (Jumlah & %), 10 Diagnosa Terbanyak, Status Pasien, Jumlah per Dokter
 - Output: `grafik_klinik.png`, `grafik_decision_tree_klinik.png`
 
-2. http://iris.py - Klasifikasi Bunga Iris
+2. iris.py - Klasifikasi Bunga Iris
 Menganalisis `Iris.csv` dan `iris_dataset.csv`.
 
 *Fitur:*
@@ -50,7 +50,7 @@ Menganalisis `Iris.csv` dan `iris_dataset.csv`.
 - Klasifikasi: `train_test_split(stratify=y)`, `RandomForestClassifier(n_estimators=200)`, `DecisionTreeClassifier`, `accuracy_score`, `classification_report`, `confusion_matrix`
 - Output: `grafik_iris.png`, `grafik_decision_tree.png`
 
-3. http://DatMinPt6.py - EDA & Data Quality Check
+3. DatMinPt6.py - EDA & Data Quality Check
 Fokus Laporan Data Quality.
 
 *Fitur:*
