@@ -3,12 +3,12 @@ Data Mining - Analisis Pelayanan Pasien & Klasifikasi Iris
 
 Repository ini berisi 3 proyek Data Mining untuk Tugas 04TPLE001, mulai dari cleaning data klinik, klasifikasi spesies bunga Iris, sampai exploratory data analysis (EDA).
 
--Daftar Isi
+Daftar Isi
 1. klinik.py - Analisis Pelayanan Pasien
 2. iris.py - Klasifikasi Bunga Iris
 3. DatMinPt6.py - EDA & Data Quality Check
 4. Cara Menjalankan
- 
+
 Struktur File
 .
 ├── venv/
