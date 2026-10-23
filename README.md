@@ -9,9 +9,9 @@ Daftar Isi
 3. DatMinPt6.py - EDA & Data Quality Check
 4. Cara Menjalankan
 
-Struktur File
+Struktur File.
 .
-├── venv/
+├── venv
 ├── .gitignore
 ├── Dataset_Pelayanan_Pasien.csv
 ├── DatMinPt6.py
