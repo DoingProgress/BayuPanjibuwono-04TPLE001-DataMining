@@ -9,18 +9,16 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.preprocessing import LabelEncoder
 
-# Pandas functions used:
-# pd.read_csv, DataFrame.select_dtypes, DataFrame.isnull, DataFrame.duplicated,
-# DataFrame.value_counts, DataFrame.fillna, DataFrame.astype, Series.eq, Series.sum,
-# DataFrame.groupby, DataFrame.sort_values, DataFrame.head, DataFrame.to_string
-
-
 FOLDER = Path(__file__).resolve().parent
 DATASET_PATH = FOLDER / "Dataset_Pelayanan_Pasien.csv"
 
 
 def main():
     df = pd.read_csv(DATASET_PATH)
+    umur_tahun = pd.to_numeric(
+        df["Umur"].astype("string").str.extract(r"(\d+)\s*thn", expand=False),
+        errors="coerce",
+    )
 
     print("1. RINGKASAN DATASET")
     print(f"Jumlah baris: {len(df)}")
@@ -28,21 +26,26 @@ def main():
     print(df.head().to_string(index=False))
 
     print("\n2. JENIS DATA")
-    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    categorical_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
+    numeric_data = pd.DataFrame({"Umur (tahun)": umur_tahun})
+    numeric_cols = numeric_data.columns.tolist()
+    categorical_cols = sorted(
+        column for column in df.columns if column != "Umur"
+    )
 
     print(f"2.1 Data numerikal ({len(numeric_cols)} kolom):")
     for nomor, col in enumerate(numeric_cols, start=1):
-        print(f"  {nomor}. {col}: {df[col].dtype}")
+        print(f"  {nomor}. {col}: {numeric_data[col].dtype}")
 
     print(f"\n2.2 Data kategorikal ({len(categorical_cols)} kolom):")
     for nomor, col in enumerate(categorical_cols, start=1):
-        print(f"  {nomor}. {col}: {df[col].dtype}")
+        jumlah_kategori = int(df[col].nunique(dropna=True))
+        print(f"  {nomor}. {col}: {jumlah_kategori} nilai unik")
 
     print("\n3. JUMLAH DUPLIKAT, NULL, DAN ZERO")
     duplicate_count = int(df.duplicated().sum())
     null_total = int(df.isnull().sum().sum())
-    zero_total = int(df[numeric_cols].eq(0).sum().sum()) if numeric_cols else 0
+    zero_per_kolom = numeric_data.eq(0).sum().sort_values(ascending=False)
+    zero_total = int(np.count_nonzero(numeric_data.to_numpy() == 0))
 
     print(f"3.1 Jumlah baris duplikat: {duplicate_count}")
     print(f"3.2 Jumlah nilai null: {null_total}")
@@ -50,16 +53,16 @@ def main():
 
     print("\n3.4 Rincian null per kolom:")
     null_per_kolom = df.isnull().sum().sort_values(ascending=False)
+    null_per_kolom = null_per_kolom[null_per_kolom > 0]
     for nomor, (kolom, jumlah) in enumerate(null_per_kolom.items(), start=1):
         print(f"  {nomor}. {kolom}: {jumlah}")
+    if null_per_kolom.empty:
+        print("  Tidak ada nilai null.")
 
     print("\n3.5 Rincian zero per kolom numerikal:")
-    if numeric_cols:
-        zero_detail = df[numeric_cols].eq(0).sum().sort_values(ascending=False)
-        for nomor, (kolom, jumlah) in enumerate(zero_detail.items(), start=1):
-            print(f"  {nomor}. {kolom}: {jumlah}")
-    else:
-        print("  Tidak ada kolom numerikal.")
+    for nomor, (kolom, jumlah) in enumerate(zero_per_kolom.items(), start=1):
+        print(f"  {nomor}. {kolom}: {jumlah}")
+    print("  Catatan: umur 0 tahun berarti usia masih di bawah 1 tahun.")
 
     # Contoh pengkodean kategorikal dengan LabelEncoder dari scikit-learn
     if "Jk" in df.columns:
@@ -69,9 +72,13 @@ def main():
         print(df[["Jk", "Jk_Code"]].head().to_string(index=False))
 
     # Pohon keputusan eksploratif untuk mengklasifikasikan status pasien.
-    kolom_umur = df["Umur"].astype("string").str.extract(r"(\d+)\s*thn")[0]
-    df["Umur_Tahun"] = pd.to_numeric(kolom_umur, errors="coerce")
-    data_pohon = df[["Umur_Tahun", "Jk_Code", "Status Pasien"]].dropna()
+    data_pohon = pd.DataFrame(
+        {
+            "Umur_Tahun": umur_tahun,
+            "Jk_Code": df["Jk_Code"],
+            "Status Pasien": df["Status Pasien"],
+        }
+    ).dropna()
     encoder_status = LabelEncoder()
     target_status = encoder_status.fit_transform(data_pohon["Status Pasien"])
     model_pohon = DecisionTreeClassifier(

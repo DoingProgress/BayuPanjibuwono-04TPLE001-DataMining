@@ -82,16 +82,68 @@ def muat_dan_bersihkan(path: Path) -> tuple[pd.DataFrame, int]:
     return data, jumlah_dihapus
 
 
+def cetak_ringkasan_kualitas(path: Path) -> None:
+    """Tampilkan klasifikasi kolom dan kualitas data sebelum pembersihan."""
+    data = pd.read_csv(path)
+    kolom_numerikal = data.select_dtypes(include=[np.number]).columns.tolist()
+    kolom_identitas = [
+        kolom
+        for kolom in kolom_numerikal
+        if re.sub(r"[^a-z0-9]", "", str(kolom).lower()) in {"id", "index"}
+    ]
+    kolom_numerikal = sorted(
+        kolom for kolom in kolom_numerikal if kolom not in kolom_identitas
+    )
+    kolom_kategorikal = sorted(
+        data.select_dtypes(exclude=[np.number]).columns.tolist() + kolom_identitas
+    )
+
+    print(f"=== JENIS DATA DAN KUALITAS DATA: {path.name} ===")
+    print(f"Jumlah baris: {len(data)}")
+    print(f"Jumlah kolom: {len(data.columns)}")
+
+    print(f"\nKolom numerikal ({len(kolom_numerikal)}):")
+    for kolom in kolom_numerikal:
+        print(f"  {kolom}: {data[kolom].dtype}")
+
+    print(f"\nKolom kategorikal ({len(kolom_kategorikal)}):")
+    for kolom in kolom_kategorikal:
+        jumlah_unik = int(data[kolom].nunique(dropna=True))
+        print(f"  {kolom}: {data[kolom].dtype}, {jumlah_unik} nilai unik")
+
+    duplikat = int(data.duplicated().sum())
+    jumlah_null = int(data.isna().sum().sum())
+    jumlah_zero_per_kolom = data[kolom_numerikal].eq(0).sum().sort_values(
+        ascending=False
+    )
+    jumlah_zero = int(np.count_nonzero(data[kolom_numerikal].to_numpy() == 0))
+
+    print("\nDuplikat, null, dan zero:")
+    print(f"  Baris duplikat: {duplikat}")
+    print(f"  Nilai null: {jumlah_null}")
+    print(f"  Nilai zero pada kolom numerikal: {jumlah_zero}")
+
+    null_per_kolom = data.isna().sum().sort_values(ascending=False)
+    null_per_kolom = null_per_kolom[null_per_kolom > 0]
+    print("  Rincian null per kolom:")
+    if null_per_kolom.empty:
+        print("    Tidak ada nilai null.")
+    else:
+        for kolom, jumlah in null_per_kolom.items():
+            print(f"    {kolom}: {jumlah}")
+
+    print("  Rincian zero per kolom numerikal:")
+    for kolom, jumlah in jumlah_zero_per_kolom.items():
+        print(f"    {kolom}: {int(jumlah)}")
+
+
 # 1. LOADING DATA
-file_dataset = cari_file("Iris_dataset.csv")
 file_iris = cari_file("Iris.csv")
 print("=== PEMUATAN DATA ===")
+cetak_ringkasan_kualitas(file_iris)
 
 data_sumber = []
-for nama_sumber, path in [
-    ("Iris_dataset.csv", file_dataset),
-    ("Iris.csv", file_iris),
-]:
+for nama_sumber, path in [("Iris.csv", file_iris)]:
     data, jumlah_dihapus = muat_dan_bersihkan(path)
     data["sumber"] = nama_sumber
     data_sumber.append(data)
@@ -102,7 +154,7 @@ for nama_sumber, path in [
 
 # Gabungkan kedua file; catatan pengukuran berulang tetap dipertahankan.
 df = pd.concat(data_sumber, ignore_index=True)
-print(f"Jumlah data gabungan: {len(df)} baris\n")
+print(f"Jumlah data dianalisis: {len(df)} baris\n")
 
 # 2. COLLECTING / RINGKASAN DATA
 jumlah_spesies = df["species"].value_counts().sort_index()
